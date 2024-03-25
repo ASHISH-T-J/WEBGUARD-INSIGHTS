@@ -46,23 +46,9 @@ webguard_banner() {
   \033[0m"
 }
 
-
-webguard_banner
-print_dynamic_color "WebGuard"
-sleep 1
-echo -n " "
-loading_effect &  
-loading_pid=$!    
-sleep 2 
-kill $loading_pid 
-print_dynamic_color "Recon Framework"
-echo -e "Enter target domain (example.com):"
-read target
-
-
 passive() {
   echo "Performing passive reconnaissance..."
-  sleep 1
+  sleep 2
 
   # Passive reconnaissance
   nslookup "$target" | grep "Address:"
@@ -87,7 +73,8 @@ active() {
   sleep 2
 
   # Active reconnaissance
-  nmap "$target" | grep "open"
+  sublist3r -d "$target" 
+  nmap  -v -A "$target" | grep "open" "os" "version" "traceroute"
   sleep 2
   wafw00f -a "$target"
   sleep 2
@@ -102,7 +89,7 @@ attack_type() {
   if [ "$attack" == "passive" ] || [ "$attack" == "Passive" ] || [ "$attack" == "PASSIVE" ]; then
     passive
   elif [ "$attack" == "active" ] || [ "$attack" == "Active" ] || [ "$attack" == "ACTIVE" ]; then
-    passive
+    
     active
   else
     echo -e "\nWrong choice...!!!!"
@@ -110,4 +97,41 @@ attack_type() {
   fi
 }
 
+tor() {
+if ! command -v tor &> /dev/null
+then
+    echo "Tor could not be found. Please install Tor and try again."
+    exit
+fi
+
+# Ask the user if they want to use Tor
+read -p "Do you want to use Tor for anonymity? (y/n): " use_tor
+
+if [[ "$use_tor" =~ ^[Yy]$ ]]
+then
+    echo "Starting Tor service..."
+    # Start the Tor service
+    service tor start
+    # Set the proxy environment variables
+    export http_proxy='socks5://127.0.0.1:9050'
+    export https_proxy='socks5://127.0.0.1:9050'
+fi
+}
+
+
+
+webguard_banner
+print_dynamic_color "WebGuard"
+sleep 1
+echo -n " "
+loading_effect &  
+loading_pid=$!    
+sleep 2 
+kill $loading_pid 
+print_dynamic_color "Recon Framework"
+echo -e "Enter target domain (example.com):"
+read target
+
+tor
 attack_type
+service tor stop
