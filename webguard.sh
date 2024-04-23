@@ -38,6 +38,13 @@ webguard_banner() {
   echo -e "\033[1;${webguard_color}m$(cat banner.txt)\033[0m"
 }
 
+active_subdomain() {
+echo "Performing Subdomain Enumuration on $target "
+  subfinder  -all  -d "$target" -silent > sub.txt
+sublist3r  -d "$target" | grep "$target" >> sub.txt
+cat sub.txt | sort | uniq > sublist.txt
+cat sublist.txt
+}
 
 passive() {
   echo "Performing passive reconnaissance..."
@@ -52,12 +59,15 @@ passive() {
   sleep 1
   whois "$target" | grep "Registrant\|Registrar"
   sleep 1
-  waybackurl "$target"
-  sleep 1
-  shodan "$target"
-  sleep 2
 
-  theHarvester -d "$target" -l 100 -b all
+active_subdomain
+
+ echo "Gathering public archives..."
+waybackurls -dates -get-versions  "$target"
+
+
+
+  theHarvester -d "$target" -l 100 -b all  | grep "cek.ac.in"
 }
 
 
@@ -66,9 +76,11 @@ active() {
   sleep 2
 
   # Active reconnaissance
-  subfinder  -all  -d cek.ac.in -silent
-sublist3r  -d cek.ac.in | grep "cek.ac.in"
- nmap -A cek.ac.in | grep -e "open" -w -e "OS" -w
+ 
+active_subdomain
+
+echo "Performing Port Scanning And Service   Enumuration on $target "
+ nmap -A "$target" | grep -e "open" -w -e "OS" -w
   sleep 2
   wafw00f -a "$target"
   sleep 2
