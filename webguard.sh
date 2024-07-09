@@ -75,7 +75,7 @@ passive() {
 directory_enum() {
   local output_file="$1"
   echo -e "\e[1;34m$(echo "Performing directory and file enumeration on $target" | tr '[:lower:]' '[:upper:]')\e[0m" | tee -a "$output_file"
-  gobuster dir -u "$surl" -w /usr/share/dirb/wordlists/common.txt -t 30 -q --no-error | tee -a "$output_file"
+  gobuster dir -u "$surl" -w common.txt -t 30 -q --no-error | tee -a "$output_file"
 }
 
 # Function to scrape admin page, phpMyAdmin page, and robots.txt from a Joomla site
